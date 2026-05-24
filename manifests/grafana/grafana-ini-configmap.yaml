@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-ini-config
+  namespace: monitoring
+data:
+  grafana.ini: |
+    [server]
+    # Tell Grafana it lives at /grafana subpath
+    # Use the ingress node IP so redirects use 192.168.49.2
+    root_url = http://192.168.49.2/grafana
+    serve_from_sub_path = true

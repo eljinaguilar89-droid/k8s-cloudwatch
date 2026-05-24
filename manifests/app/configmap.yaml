@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudwatch-app-config
+  namespace: monitoring
+data:
+  # Simple key-value pairs — injected as environment variables
+  NODE_ENV: "production"
+  PORT: "3001"
+  APP_NAME: "cloudwatch-stack"
+  LOG_LEVEL: "info"

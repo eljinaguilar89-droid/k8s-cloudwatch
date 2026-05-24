@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+spec:
+  replicas: 1          # Prometheus doesn't scale horizontally — always 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:latest
+          ports:
+            - containerPort: 9090
+          args:
+            # Tell Prometheus where its config file is
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            # Where to store time-series data
+            - "--storage.tsdb.path=/prometheus"
+            # Keep 7 days of data
+            - "--storage.tsdb.retention.time=7d"
+            # Allow hot reload of config without restart
+            - "--web.enable-lifecycle"
+            - "--web.external-url=/prometheus"
+            - "--web.route-prefix=/prometheus"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+          # Mount the ConfigMap as a file inside the container
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus/
+            # Persistent storage for metrics data
+            - name: prometheus-storage
+              mountPath: /prometheus
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 15
+            periodSeconds: 5
+      volumes:
+        # This volume comes from the ConfigMap you wrote in Step 4
+        # prometheus.yml key in the ConfigMap becomes the filename
+        - name: prometheus-config-volume
+          configMap:
+            name: prometheus-config
+        # This is an emptyDir — temporary storage that lives as long as the Pod
+        # In production you'd use a PersistentVolume here
+        - name: prometheus-storage
+          emptyDir: {}

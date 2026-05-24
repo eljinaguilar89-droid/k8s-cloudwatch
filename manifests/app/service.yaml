@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudwatch-app-service
+  namespace: monitoring
+spec:
+  selector:
+    app: cloudwatch-app
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+  type: ClusterIP        # already ClusterIP, just confirming
