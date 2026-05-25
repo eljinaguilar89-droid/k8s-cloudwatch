@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cloudwatch-app
-  namespace: monitoring          # which namespace this lives in (Step 4)
+  namespace: monitoring
   labels:
     app: cloudwatch-app
 spec:
-  replicas: 2                    # run 2 copies of the app at all times
+  replicas: 2
   selector:
     matchLabels:
-      app: cloudwatch-app        # this Deployment manages Pods with this label
-  template:                      # this is the Pod template — what each Pod looks like
+      app: cloudwatch-app
+  template:
     metadata:
       labels:
-        app: cloudwatch-app      # label applied to every Pod this Deployment creates
+        app: cloudwatch-app
     spec:
       containers:
         - name: cloudwatch-app
@@ -22,27 +22,21 @@ spec:
             - containerPort: 3001
           envFrom:
             - configMapRef:
-                name: cloudwatch-app-config   # inject all keys as env variables
-          # Resource limits — tells Kubernetes how much CPU/RAM this container needs
-          # requests = minimum guaranteed, limits = maximum allowed
+                name: cloudwatch-app-config
           resources:
             requests:
-              memory: "64Mi"     # 64 megabytes minimum
-              cpu: "100m"        # 100 millicores = 0.1 CPU minimum
+              memory: "64Mi"
+              cpu: "100m"
             limits:
-              memory: "128Mi"    # never exceed 128MB RAM
-              cpu: "200m"        # never exceed 0.2 CPU
-          # Liveness probe — Kubernetes restarts the container if this fails
-          # Checks /hello every 10 seconds, restarts if it fails 3 times in a row
+              memory: "128Mi"
+              cpu: "200m"
           livenessProbe:
             httpGet:
               path: /hello
               port: 3001
-            initialDelaySeconds: 10   # wait 10s before first check (app needs time to start)
+            initialDelaySeconds: 10
             periodSeconds: 10
             failureThreshold: 3
-          # Readiness probe — only send traffic when this passes
-          # Keeps Pod out of Service rotation until app is actually ready
           readinessProbe:
             httpGet:
               path: /hello

@@ -5,13 +5,8 @@ metadata:
   namespace: monitoring
 spec:
   hard:
-    # Maximum total CPU all Pods in this namespace can request
     requests.cpu: "1"
-    # Maximum total RAM all Pods in this namespace can request
     requests.memory: "512Mi"
-    # Maximum total CPU limit across all Pods
     limits.cpu: "2"
-    # Maximum total RAM limit across all Pods
     limits.memory: "1Gi"
-    # Maximum number of Pods allowed in this namespace
     pods: "10"

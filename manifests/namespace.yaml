@@ -3,6 +3,5 @@ kind: Namespace
 metadata:
   name: monitoring
   labels:
-    # Labels on namespaces are used for network policies and access control
     name: monitoring
     environment: development

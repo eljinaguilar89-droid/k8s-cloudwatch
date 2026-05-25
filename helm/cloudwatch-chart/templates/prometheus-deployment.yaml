@@ -1,56 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus
-  namespace: monitoring
+  name: {{ .Values.prometheus.name }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: prometheus
+    app: {{ .Values.prometheus.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.prometheus.replicas }}
   selector:
     matchLabels:
-      app: prometheus
+      app: {{ .Values.prometheus.name }}
   template:
     metadata:
       labels:
-        app: prometheus
+        app: {{ .Values.prometheus.name }}
     spec:
       containers:
-        - name: prometheus
-          image: prom/prometheus:latest
+        - name: {{ .Values.prometheus.name }}
+          image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
           ports:
-            - containerPort: 9090
+            - containerPort: {{ .Values.prometheus.port }}
           args:
             - "--config.file=/etc/prometheus/prometheus.yml"
             - "--storage.tsdb.path=/prometheus"
-            - "--storage.tsdb.retention.time=7d"
+            - "--storage.tsdb.retention.time={{ .Values.prometheus.retention }}"
             - "--web.enable-lifecycle"
             - "--web.external-url=/prometheus"
             - "--web.route-prefix=/prometheus"
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: {{ .Values.prometheus.resources.requests.memory }}
+              cpu: {{ .Values.prometheus.resources.requests.cpu }}
             limits:
-              memory: "256Mi"
-              cpu: "300m"
+              memory: {{ .Values.prometheus.resources.limits.memory }}
+              cpu: {{ .Values.prometheus.resources.limits.cpu }}
           volumeMounts:
             - name: prometheus-config-volume
               mountPath: /etc/prometheus/
             - name: prometheus-storage
               mountPath: /prometheus
-          livenessProbe:
-            httpGet:
-              path: /-/healthy
-              port: 9090
-            initialDelaySeconds: 30
-            periodSeconds: 15
-          readinessProbe:
-            httpGet:
-              path: /-/ready
-              port: 9090
-            initialDelaySeconds: 15
-            periodSeconds: 5
       volumes:
         - name: prometheus-config-volume
           configMap:
